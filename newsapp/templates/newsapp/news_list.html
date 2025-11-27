@@ -1,9 +1,37 @@
-<h1>ニュース一覧</h1>
+<h1>ニュース一覧 ＋ 大喜利お題生成</h1>
 
-<p>※カテゴリ選択フォームは後で作る</p>
+<form method="get" action="/news/">
+    <label>カテゴリ選択：</label>
+    <select name="category" onchange="this.form.submit()">
+        <option value="sports" {% if selected_category == "sports" %}selected{% endif %}>スポーツ</option>
+        <option value="entertainment" {% if selected_category == "entertainment" %}selected{% endif %}>芸能</option>
+        <option value="politics" {% if selected_category == "politics" %}selected{% endif %}>政治</option>
+        <option value="anime" {% if selected_category == "anime" %}selected{% endif %}>アニメ</option>
+    </select>
+</form>
 
+<hr>
+
+<h2>AI が作った大喜利お題（3本まで）</h2>
+
+{% if ogiri_pairs %}
+{% for pair in ogiri_pairs %}
+<div style="margin-bottom: 1.5em;">
+    <p><strong>元ニュースタイトル {{ forloop.counter }}：</strong>「{{ pair.title }}」</p>
+    <p><strong>お題 {{ forloop.counter }}：</strong>{{ pair.prompt }}</p>
+</div>
+{% endfor %}
+{% else %}
+<p>まだニュースが取得できていないか、お題生成に失敗しました。</p>
+{% endif %}
+
+<hr>
+
+<h2>ニュースタイトル一覧</h2>
 <ul>
     {% for t in titles %}
     <li>{{ t }}</li>
+    {% empty %}
+    <li>ニュースが取得できませんでした。</li>
     {% endfor %}
 </ul>
