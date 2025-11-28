@@ -3,7 +3,7 @@ import random
 
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-
+from django.conf import settings
 from .services import fetch_news_titles, generate_ogiri_prompt_ai
 
 import google.generativeai as genai
@@ -49,7 +49,8 @@ def generate_ogiri_prompt_from_title(title: str) -> str:
         if not text:
             return "（お題の生成に失敗しました。自分でボケてみてください。）"
         return text
-    except Exception:
+    except Exception as e:
+        print("🔥 Gemini API でエラー発生:", e)
         # 例外が出た場合もアプリが落ちないようにする
         return "（お題の生成に失敗しました。自分でボケてみてください。）"
 
@@ -66,7 +67,7 @@ def news_list(request):
     else:
         sample_titles = []
 
-    # ★ここが本番の保証処理：必ずlen==3になるよう埋めてる
+    # ここが本番の保証処理：必ずlen==3になるよう埋めてる
     while len(sample_titles) < 3:
         sample_titles.append("ニュース消失！今どんなボケしてくれる？")
 
@@ -74,10 +75,19 @@ def news_list(request):
         ogiri = generate_ogiri_prompt_ai(t)
         ogiri_pairs.append({"title": t, "prompt": ogiri})
 
+    print("生成ペア数:", len(ogiri_pairs))  #  ループ外に追加
+
     context = {
         "titles": titles,
         "selected_category": category,
-        "ogiri_pairs": ogiri_pairs[:3],  # ★断定の3個保証
+        "ogiri_pairs": ogiri_pairs[:3],  # 断定の3個保証
     }
     return render(request, "newsapp/news_list.html", context)
+
+def login_view(request):
+    # ✅ 明示的にテンプレートのフルパスを構築
+    path = os.path.join(settings.BASE_DIR, 'newsapp', 'templates', 'registration', 'login.html')
+    print("テンプレートパス:", path)  # デバッグ出力
+
+    return render(request, 'registration/login.html')
 

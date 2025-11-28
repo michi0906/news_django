@@ -1,7 +1,9 @@
 import os
 import requests
-from random import choice
-import google.generativeai as genai
+# from random import choice
+# import google.generativeai as genai
+import requests
+
 
 NEWSAPI_KEY = os.environ.get("NEWSAPI_KEY")
 
@@ -76,29 +78,56 @@ def generate_ogiri_prompt_ai(title: str) -> str:
     if not api_key:
         return f"【エラー】GEMINI_API_KEY が設定されていません。（タイトル: {title}）"
 
-    genai.configure(api_key=api_key)
+    # genai.configure(api_key=api_key)
 
-    model = genai.GenerativeModel("gemini-pro")
+    # model = genai.GenerativeModel("gemini-1.5-flash")
 
-    prompt = f"""
-あなたは日本のお笑い芸人です。
-以下のニュースタイトルを元に、大喜利のお題を１つだけ作ってください。
+     # ✅ REST APIのURL（SDKではなくrequestsで叩く）
+    url = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent"
+    headers = {"Content-Type": "application/json"}
+
+    # ✅ リクエスト内容（JSON形式）
+    payload = {
+        "contents": [
+            {
+                "parts": [
+                    {
+                        "text": f"""
+ニュースタイトル『{title}』をもとに、
+日本語で面白い大喜利のお題を1つだけ作ってください。
 
 条件:
-- 日本語
-- できるだけ短くシンプル
-- ひねりのある、ボケやすいお題
-- 出力はお題の文章だけ（前置きや説明は書かない）
-
-ニュースタイトル: 「{title}」
+- シンプルでひねりがある
+- 前置きや説明は不要
+- お題文のみを返す
 """
-
+                    }
+                ]
+            }
+        ]
+    }
     try:
-        response = model.generate_content(prompt)
-        text = (response.text or "").strip()
-        if not text:
-            return f"【大喜利】『{title}』というニュースから、自由にボケてください。"
-        return text
-    except Exception:
-        # 何かあったらフォールバック
-        return f"【大喜利】『{title}』というニュースから、自由にボケてください。"""
+        # ✅ HTTP POST でリクエストを送信
+        response = requests.post(f"{url}?key={api_key}", headers=headers, json=payload)
+
+        result = response.json()
+
+        # デバッグ用にレスポンス全体を出力（開発中のみ）
+        print("Geminiレスポンス:", result)
+
+        # ✅ candidatesが存在する場合だけ抽出
+        if "candidates" in result:
+            text = result["candidates"][0]["content"]["parts"][0]["text"].strip()
+            return text if text else f"【大喜利】『{title}』というニュースから、自由にボケてください。"
+        else:
+            # エラーレスポンスの場合
+            err = result.get("error", {}).get("message", "不明なエラー")
+            print("Geminiエラー内容:", err)
+            return f"【Geminiエラー】お題生成に失敗しました（{err}）"
+
+        # if not text:
+        #     return f"【大喜利】『{title}』というニュースから、自由にボケてください。"
+        # return text
+    except Exception as e:
+        print("Geminiエラー:", e)
+        return f"【大喜利】『{title}』というニュースから、自由にボケてください。"
