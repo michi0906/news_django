@@ -83,7 +83,7 @@ def generate_ogiri_prompt_ai(title: str) -> str:
     # model = genai.GenerativeModel("gemini-1.5-flash")
 
      # ✅ REST APIのURL（SDKではなくrequestsで叩く）
-    url = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent"
+    url = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent"
     headers = {"Content-Type": "application/json"}
 
     # ✅ リクエスト内容（JSON形式）

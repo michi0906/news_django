@@ -47,7 +47,7 @@ def generate_ogiri_prompt_from_title(title: str) -> str:
 """
 
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-2.0-flash")
         response = model.generate_content(system_prompt)
         text = (response.text or "").strip()
         if not text:
