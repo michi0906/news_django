@@ -108,7 +108,8 @@ def generate_ogiri_prompt_ai(title: str) -> str:
     }
     try:
         # ✅ HTTP POST でリクエストを送信
-        response = requests.post(f"{url}?key={api_key}", headers=headers, json=payload)
+        response = requests.post( url, headers=headers, json=payload, params={"key": api_key})
+
 
         result = response.json()
 

@@ -15,6 +15,10 @@ if GEMINI_API_KEY:
 
 
 def generate_ogiri_prompt_from_title(title: str) -> str:
+
+    print("GEMINI_API_KEY:", GEMINI_API_KEY)
+    print("post request will be sent now")  # ← これが一番欲しいログ
+
     """
     1つのニュースタイトルから、大喜利お題を1つ生成して返す。
     失敗したら、 fallback のメッセージを返す。
