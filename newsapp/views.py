@@ -5,8 +5,14 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from .services import fetch_news_titles, generate_ogiri_prompt_ai
+from django.contrib.auth import get_user_model
+from django.shortcuts import render, redirect  # HTMLを返す/画面遷移を行う役割仕様
+from django.contrib.auth import authenticate, login  # 認証/ログインsession生成の確定機能
 
 import google.generativeai as genai
+
+
+User = get_user_model()  # カスタムユーザ器を確定で連結する点として必要
 
 # Gemini の設定：環境変数から API キーを読む
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
@@ -86,12 +92,36 @@ def news_list(request):
         "selected_category": category,
         "ogiri_pairs": ogiri_pairs[:3],  # 断定の3個保証
     }
-    return render(request, "newsapp/news_list.html", context)
+    return render(request, "news_list.html", context)
+
+# def login_view(request):
+#     # ✅ 明示的にテンプレートのフルパスを構築
+#     path = os.path.join(settings.BASE_DIR, 'newsapp', 'templates', 'registration', 'login.html')
+#     print("テンプレートパス:", path)  # デバッグ出力
+
+#     return render(request, 'registration/login.html')
 
 def login_view(request):
-    # ✅ 明示的にテンプレートのフルパスを構築
-    path = os.path.join(settings.BASE_DIR, 'newsapp', 'templates', 'registration', 'login.html')
-    print("テンプレートパス:", path)  # デバッグ出力
+    """
+    メールアドレスとパスワードでログインを行う（usernameではなくemailを使う設計）
+    これは "POST" メソッドでしか値を受け取れない仕様 ← HTMLでmethod=postと一致する必要がある
+    """
+    if request.method == "POST":  # ブラウザからデータが届くのはPOSTのみと断定して捌く分岐
 
-    return render(request, 'registration/login.html')
+        email = request.POST.get("email")  # POST器の中からemailキーを拾う仕様
+        password = request.POST.get("password")  # 同じくpasswordキーを拾う
+
+        user = authenticate(request, username=email, password=password)
+        # なぜ username=email か？
+        # Django標準認証は "username/passwordペア" で照合するAPI仕様だから（メールをusername扱いする設計はこの1行でのみ成立）
+
+        if user:  # 認証成功時のみTrueになる確定分岐
+            login(request, user)  # 認証sessionを生成し永続cookieに保存する確定作用
+            return redirect("news_list")  # 成功後遷移
+
+    return render(request, "registration/login.html")
+
+@login_required
+def news_list_view(request):
+    return render(request, "newsapp/news_list.html")
 

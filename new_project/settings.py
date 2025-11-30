@@ -60,13 +60,15 @@ ROOT_URLCONF = 'new_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'newsapp' / 'templates'],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
             ],
         },
     },
@@ -127,5 +129,9 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_REDIRECT_URL = "/news/"
-LOGOUT_REDIRECT_URL = "/accounts/login/"
+AUTH_USER_MODEL = "newsapp.CustomUser"  # email を主キーで使うカスタムUserモデルを採用する宣言
+LOGIN_URL = "/login/"  # 未ログイン時に飛ばされるURL ← 認証ロジックの前にブラウザに伝える宣言
+LOGIN_REDIRECT_URL = "/news/"  # ログイン成功後の確定遷移先
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend"  # Django標準の認証エンジンを使うことを宣言
+]

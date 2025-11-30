@@ -2,6 +2,14 @@
 
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
+    <!-- メールアドレス入力欄を追加するのはformの中 ← HTML仕様で送信可能な器の内側となるため -->
+    <input type="email" name="email" required placeholder="メールアドレス">
+    <!-- パスワード入力欄もformの中 ← passwordはブラウザが隠して表示する仕様なのでtype="password"を使う -->
+    <input type="password" name="password" required placeholder="パスワード">
+    <!-- 送信作用点。押したらPOSTが確定で発火する仕様 -->
     <button type="submit">ログインする</button>
 </form>
+
+{% if form.errors %}
+<p style="color:red;">メールアドレスまたはパスワードが間違っています。</p>
+{% endif %}
